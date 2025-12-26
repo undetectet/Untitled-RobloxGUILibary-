@@ -5,16 +5,18 @@ local UserInputService = game:GetService("UserInputService")
 
 local BoldItalic = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Bold, Enum.FontStyle.Italic)
 
--- Default-Werte (falls keine Config gesetzt wird)
-local Name = "My Menu"
-local Tabs = {"Combat"}
+-- Globale Variablen (werden von außen überschrieben)
+_G.Name = _G.Name or "My Menu"
+_G.Tabs = _G.Tabs or {"Combat"}
 
 -- ==================== GUI ERSTELLEN ====================
 local gui = Instance.new("ScreenGui")
+gui.Name = _G.Name or "MainMenu"
 gui.ResetOnSpawn = false
 gui.Parent = game:GetService("CoreGui")
 
 local main = Instance.new("Frame")
+main.Name = "MainFrame"
 main.Size = UDim2.new(0, 430, 0, 400)
 main.Position = UDim2.new(0.5, 0, 0.5, 0)
 main.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -32,6 +34,7 @@ local title = Instance.new("TextLabel", main)
 title.Size = UDim2.new(1, -60, 0, 45)
 title.Position = UDim2.new(0.03, 0, 0, 0)
 title.BackgroundTransparency = 1
+title.Text = _G.Name or "My Menu"
 title.FontFace = BoldItalic
 title.TextSize = 25
 title.TextXAlignment = Enum.TextXAlignment.Left
@@ -150,20 +153,14 @@ local function createTab(name, index)
     tabButtons[name] = btn
 end
 
--- ==================== CONFIG WIRD HIER ANGEWENDET (GANZ AM ENDE) ====================
-
--- Warte kurz, damit Config von außen überschrieben werden kann
-task.wait()
-
-gui.Name = Name or "MainMenu"
-title.Text = Name or "My Menu"
-
-for i, tabName in ipairs(Tabs or {"Combat"}) do
+-- Tabs erstellen
+for i, tabName in ipairs(_G.Tabs or {"Combat"}) do
     createTab(tabName, i)
 end
 
-if #Tabs > 0 then
-    selectTab(Tabs[1])
+-- Ersten Tab auswählen
+if #_G.Tabs > 0 then
+    selectTab(_G.Tabs[1])
 end
 
 -- Insert Open/Close
@@ -181,4 +178,4 @@ UserInputService.InputBegan:Connect(function(input, gpe)
     end
 end)
 
-print((Name or "My Menu") .. " Main Menu loaded! Tabs: " .. table.concat(Tabs or {}, ", "))
+print((_G.Name or "My Menu") .. " Main Menu loaded! Tabs: " .. table.concat(_G.Tabs or {}, ", "))
