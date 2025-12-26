@@ -1,22 +1,20 @@
--- Roblox Main Menu Base (Nur GUI – perfekt für loadstring)
+-- Roblox Main Menu Base – Nur GUI (für loadstring)
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
 local BoldItalic = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Bold, Enum.FontStyle.Italic)
 
--- ==================== DEFAULT CONFIG (wird unten überschrieben) ====================
+-- Default-Werte (falls keine Config gesetzt wird)
 local Name = "My Menu"
 local Tabs = {"Combat"}
 
 -- ==================== GUI ERSTELLEN ====================
 local gui = Instance.new("ScreenGui")
-gui.Name = "MainMenu"
 gui.ResetOnSpawn = false
 gui.Parent = game:GetService("CoreGui")
 
 local main = Instance.new("Frame")
-main.Name = "MainFrame"
 main.Size = UDim2.new(0, 430, 0, 400)
 main.Position = UDim2.new(0.5, 0, 0.5, 0)
 main.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -34,7 +32,6 @@ local title = Instance.new("TextLabel", main)
 title.Size = UDim2.new(1, -60, 0, 45)
 title.Position = UDim2.new(0.03, 0, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = Name
 title.FontFace = BoldItalic
 title.TextSize = 25
 title.TextXAlignment = Enum.TextXAlignment.Left
@@ -60,7 +57,7 @@ closeBtn.MouseButton1Click:Connect(function()
     gui:Destroy()
 end)
 
--- Drag Bar
+-- Drag
 local dragBar = Instance.new("Frame", main)
 dragBar.Size = UDim2.new(1, 0, 0, 45)
 dragBar.BackgroundTransparency = 1
@@ -90,7 +87,7 @@ UserInputService.InputEnded:Connect(function(input)
     end
 end)
 
--- Content Area (leer – für später)
+-- Content Area (leer)
 local contentArea = Instance.new("Frame", main)
 contentArea.Size = UDim2.new(0, 300, 0, 330)
 contentArea.Position = UDim2.new(0.30, 0, 0.15, 0)
@@ -133,7 +130,6 @@ local function selectTab(tabName)
         Position = tabButtons[tabName].Position,
         Size = tabButtons[tabName].Size
     }):Play()
-    -- Content wird später gefüllt
 end
 
 local function createTab(name, index)
@@ -149,27 +145,28 @@ local function createTab(name, index)
     btn.ZIndex = 14
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
     btn.MouseButton1Click:Connect(function()
-        if main.Visible then selectTab(name) end
+        selectTab(name)
     end)
     tabButtons[name] = btn
 end
 
--- ==================== CONFIG ANWENDEN ====================
+-- ==================== CONFIG WIRD HIER ANGEWENDET (GANZ AM ENDE) ====================
 
-gui.Name = Name
-title.Text = Name
+-- Warte kurz, damit Config von außen überschrieben werden kann
+task.wait()
 
--- Tabs erstellen
-for i, tabName in ipairs(Tabs) do
+gui.Name = Name or "MainMenu"
+title.Text = Name or "My Menu"
+
+for i, tabName in ipairs(Tabs or {"Combat"}) do
     createTab(tabName, i)
 end
 
--- Ersten Tab auswählen
 if #Tabs > 0 then
     selectTab(Tabs[1])
 end
 
--- Insert zum Öffnen/Schließen
+-- Insert Open/Close
 UserInputService.InputBegan:Connect(function(input, gpe)
     if gpe then return end
     if input.KeyCode == Enum.KeyCode.Insert then
@@ -184,4 +181,4 @@ UserInputService.InputBegan:Connect(function(input, gpe)
     end
 end)
 
-print(Name .. " Main Menu loaded!")
+print((Name or "My Menu") .. " Main Menu loaded! Tabs: " .. table.concat(Tabs or {}, ", "))
