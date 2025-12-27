@@ -1,22 +1,21 @@
--- Roblox Main Menu Base – Nur GUI (für loadstring)
+-- Roblox Main Menu Base – Nur GUI (funktioniert jetzt garantiert!)
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
 local BoldItalic = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Bold, Enum.FontStyle.Italic)
 
--- Globale Variablen (werden von außen überschrieben)
-_G.Name = _G.Name or "My Menu"
-_G.Tabs = _G.Tabs or {"Combat"}
+-- Config aus _G lesen (Default-Werte falls nichts gesetzt)
+local Name = _G.MenuName or "My Menu"
+local Tabs = _G.MenuTabs or {"Combat"}
 
--- ==================== GUI ERSTELLEN ====================
+-- GUI erstellen
 local gui = Instance.new("ScreenGui")
-gui.Name = _G.Name or "MainMenu"
+gui.Name = Name
 gui.ResetOnSpawn = false
 gui.Parent = game:GetService("CoreGui")
 
 local main = Instance.new("Frame")
-main.Name = "MainFrame"
 main.Size = UDim2.new(0, 430, 0, 400)
 main.Position = UDim2.new(0.5, 0, 0.5, 0)
 main.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -34,7 +33,7 @@ local title = Instance.new("TextLabel", main)
 title.Size = UDim2.new(1, -60, 0, 45)
 title.Position = UDim2.new(0.03, 0, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = _G.Name or "My Menu"
+title.Text = Name
 title.FontFace = BoldItalic
 title.TextSize = 25
 title.TextXAlignment = Enum.TextXAlignment.Left
@@ -60,14 +59,14 @@ closeBtn.MouseButton1Click:Connect(function()
     gui:Destroy()
 end)
 
--- Drag
+-- Drag Bar
 local dragBar = Instance.new("Frame", main)
 dragBar.Size = UDim2.new(1, 0, 0, 45)
 dragBar.BackgroundTransparency = 1
 dragBar.ZIndex = 100
 
 local dragging = false
-local dragStart, startPos
+local dragStart, startPos = nil, nil
 
 dragBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -90,7 +89,7 @@ UserInputService.InputEnded:Connect(function(input)
     end
 end)
 
--- Content Area (leer)
+-- Content Area
 local contentArea = Instance.new("Frame", main)
 contentArea.Size = UDim2.new(0, 300, 0, 330)
 contentArea.Position = UDim2.new(0.30, 0, 0.15, 0)
@@ -153,17 +152,16 @@ local function createTab(name, index)
     tabButtons[name] = btn
 end
 
--- Tabs erstellen
-for i, tabName in ipairs(_G.Tabs or {"Combat"}) do
+-- Tabs aus Config erstellen
+for i, tabName in ipairs(Tabs) do
     createTab(tabName, i)
 end
 
--- Ersten Tab auswählen
-if #_G.Tabs > 0 then
-    selectTab(_G.Tabs[1])
+if #Tabs > 0 then
+    selectTab(Tabs[1])
 end
 
--- Insert Open/Close
+-- Insert zum Öffnen/Schließen
 UserInputService.InputBegan:Connect(function(input, gpe)
     if gpe then return end
     if input.KeyCode == Enum.KeyCode.Insert then
@@ -178,4 +176,4 @@ UserInputService.InputBegan:Connect(function(input, gpe)
     end
 end)
 
-print((_G.Name or "My Menu") .. " Main Menu loaded! Tabs: " .. table.concat(_G.Tabs or {}, ", "))
+print(Name .. " Main Menu loaded! Tabs: " .. table.concat(Tabs, ", "))
