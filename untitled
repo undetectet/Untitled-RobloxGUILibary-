@@ -1,4 +1,4 @@
--- Roblox Main Menu Base – Mit Tabs & Toggles aus Config
+-- Roblox Main Menu Base – Mit Tabs, Toggles & perfektem Scrolling
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -86,14 +86,17 @@ UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
 end)
 
--- Content Scrolling
+-- Content Scrolling (keine ScrollBar sichtbar, aber Mausrad funktioniert)
 local contentScroll = Instance.new("ScrollingFrame", main)
 contentScroll.Size = UDim2.new(0, 300, 0, 330)
 contentScroll.Position = UDim2.new(0.30, 0, 0.15, 0)
 contentScroll.BackgroundTransparency = 1
-contentScroll.ScrollBarThickness = 6
+contentScroll.ScrollBarThickness = 0  -- <-- ScrollBar unsichtbar!
+contentScroll.ScrollBarImageColor3 = Color3.new(0,0,0)
 contentScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+contentScroll.ScrollingDirection = Enum.ScrollingDirection.Y
 contentScroll.ZIndex = 12
+contentScroll.CanvasSize = UDim2.new(0, 0, 0, 0)  -- Wird automatisch angepasst
 
 local content = Instance.new("Frame", contentScroll)
 content.Size = UDim2.new(1, 0, 1, 0)
@@ -190,7 +193,6 @@ local function createToggle(tabName, toggleName, index)
     indicator.ZIndex = 15
     Instance.new("UICorner", indicator).CornerRadius = UDim.new(1, 0)
 
-    -- Toggle Funktion (hier später echte Features einbauen)
     local enabled = false
     btn.MouseButton1Click:Connect(function()
         enabled = not enabled
