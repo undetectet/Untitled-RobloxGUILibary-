@@ -1,14 +1,11 @@
--- Roblox Main Menu Base – Mit Tabs, Toggles & perfektem Scrolling
+-- Untitled Roblox GUI Library – Rayfield-Style (Tabs & Toggles)
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
 local BoldItalic = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Bold, Enum.FontStyle.Italic)
 
--- Config lesen
-local Name = _G.MenuName or "My Menu"
-local Tabs = _G.MenuTabs or {"Combat"}
-local Toggles = _G.MenuToggles or {Combat = {"Aimbot"}}
+local Name = "Untitled GUI"
 
 -- GUI
 local gui = Instance.new("ScreenGui")
@@ -86,23 +83,20 @@ UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
 end)
 
--- Content Scrolling (keine ScrollBar sichtbar, aber Mausrad funktioniert)
+-- Content Scrolling (unsichtbare Bar, Mausrad funktioniert)
 local contentScroll = Instance.new("ScrollingFrame", main)
 contentScroll.Size = UDim2.new(0, 300, 0, 330)
 contentScroll.Position = UDim2.new(0.30, 0, 0.15, 0)
 contentScroll.BackgroundTransparency = 1
-contentScroll.ScrollBarThickness = 0  -- <-- ScrollBar unsichtbar!
-contentScroll.ScrollBarImageColor3 = Color3.new(0,0,0)
+contentScroll.ScrollBarThickness = 0
 contentScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-contentScroll.ScrollingDirection = Enum.ScrollingDirection.Y
 contentScroll.ZIndex = 12
-contentScroll.CanvasSize = UDim2.new(0, 0, 0, 0)  -- Wird automatisch angepasst
 
 local content = Instance.new("Frame", contentScroll)
 content.Size = UDim2.new(1, 0, 1, 0)
 content.BackgroundTransparency = 1
 
--- Tabs Frame
+-- Tabs
 local tabsFrame = Instance.new("Frame", main)
 tabsFrame.Size = UDim2.new(0, 115, 0, 330)
 tabsFrame.Position = UDim2.new(0.03, 0, 0.15, 0)
@@ -115,7 +109,6 @@ tabsStroke.Color = Color3.fromRGB(255, 255, 255)
 tabsStroke.Thickness = 1
 tabsStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
--- Selector
 local selector = Instance.new("Frame", tabsFrame)
 selector.Size = UDim2.new(1, -16, 0, 40)
 selector.BackgroundTransparency = 1
@@ -127,98 +120,102 @@ selectorStroke.Color = Color3.fromRGB(255, 255, 255)
 selectorStroke.Thickness = 1
 selectorStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
--- Tab & Toggle System
-local tabButtons = {}
-local tabContents = {}
+-- Library Functions
+local Library = {}
+
+local Tabs = {}
 local currentTab = nil
 
-local function selectTab(tabName)
-    if currentTab == tabName then return end
-    currentTab = tabName
-    TweenService:Create(selector, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Position = tabButtons[tabName].Position,
-        Size = tabButtons[tabName].Size
-    }):Play()
-    for _, obj in pairs(content:GetChildren()) do
-        if obj:IsA("GuiObject") then obj.Visible = false end
-    end
-    for _, obj in pairs(tabContents[tabName] or {}) do
-        obj.Visible = true
-    end
-end
+function Library:CreateTab(options)
+    local tabName = options.Name or "Tab"
+    local tabIndex = #Tabs + 1
 
-local function createTab(name, index)
     local btn = Instance.new("TextButton", tabsFrame)
     btn.Size = UDim2.new(1, -16, 0, 40)
-    btn.Position = UDim2.new(0, 8, 0, 4 + (index - 1) * 47)
+    btn.Position = UDim2.new(0, 8, 0, 4 + (tabIndex - 1) * 47)
     btn.BackgroundTransparency = 1
-    btn.Text = name
+    btn.Text = tabName
     btn.FontFace = BoldItalic
     btn.TextSize = 25
     btn.TextColor3 = Color3.new(1, 1, 1)
-    btn.AutoButtonColor = false
-    btn.ZIndex = 14
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
-    btn.MouseButton1Click:Connect(function()
-        selectTab(name)
-    end)
-    tabButtons[name] = btn
-    tabContents[name] = {}
-end
-
-local function createToggle(tabName, toggleName, index)
-    local btn = Instance.new("TextButton", content)
-    btn.Size = UDim2.new(0.95, 0, 0, 35)
-    btn.Position = UDim2.new(0.025, 0, 0, 4 + (index - 1) * 47)
-    btn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    btn.Text = toggleName
-    btn.FontFace = BoldItalic
-    btn.TextSize = 22
-    btn.TextColor3 = Color3.new(1, 1, 1)
-    btn.AutoButtonColor = false
-    btn.Visible = false
     btn.ZIndex = 14
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
 
-    local stroke = Instance.new("UIStroke", btn)
-    stroke.Color = Color3.fromRGB(255, 255, 255)
-    stroke.Thickness = 1
-    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    local tabContent = {}
 
-    local indicator = Instance.new("Frame", btn)
-    indicator.Name = "Indicator"
-    indicator.Size = UDim2.new(0, 20, 0, 20)
-    indicator.Position = UDim2.new(1, -25, 0.5, -10)
-    indicator.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    indicator.ZIndex = 15
-    Instance.new("UICorner", indicator).CornerRadius = UDim.new(1, 0)
-
-    local enabled = false
     btn.MouseButton1Click:Connect(function()
-        enabled = not enabled
-        TweenService:Create(indicator, TweenInfo.new(0.2), {
-            BackgroundColor3 = enabled and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(40, 40, 40)
+        if currentTab == tabName then return end
+        currentTab = tabName
+        TweenService:Create(selector, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Position = btn.Position,
+            Size = btn.Size
         }):Play()
-        print(toggleName .. " = " .. tostring(enabled))
+        for _, obj in pairs(content:GetChildren()) do
+            if obj:IsA("GuiObject") then obj.Visible = false end
+        end
+        for _, obj in pairs(Tabs[tabName] or {}) do
+            obj.Visible = true
+        end
     end)
 
-    table.insert(tabContents[tabName], btn)
-end
+    Tabs[tabName] = tabContent
 
--- Tabs & Toggles aus Config erstellen
-for i, tabName in ipairs(Tabs) do
-    createTab(tabName, i)
-end
-
-for tabName, toggleList in pairs(Toggles) do
-    for i, toggleName in ipairs(toggleList) do
-        createToggle(tabName, toggleName, i)
+    if tabIndex == 1 then
+        currentTab = tabName
+        selector.Position = btn.Position
+        selector.Size = btn.Size
     end
+
+    -- Tab-Objekt zurückgeben
+    local tabObj = {}
+
+    function tabObj:CreateToggle(options)
+        local toggleName = options.Name or "Toggle"
+        local currentValue = options.CurrentValue or false
+        local callback = options.Callback or function() end
+        local flag = options.Flag
+
+        local toggleBtn = Instance.new("TextButton", content)
+        toggleBtn.Size = UDim2.new(0.95, 0, 0, 35)
+        toggleBtn.Position = UDim2.new(0.025, 0, 0, 4 + (#tabContent) * 47)
+        toggleBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+        toggleBtn.Text = toggleName
+        toggleBtn.FontFace = BoldItalic
+        toggleBtn.TextSize = 22
+        toggleBtn.TextColor3 = Color3.new(1, 1, 1)
+        toggleBtn.Visible = (currentTab == tabName)
+        toggleBtn.ZIndex = 14
+        Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0, 10)
+
+        local stroke = Instance.new("UIStroke", toggleBtn)
+        stroke.Color = Color3.fromRGB(255, 255, 255)
+        stroke.Thickness = 1
+        stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+        local indicator = Instance.new("Frame", toggleBtn)
+        indicator.Name = "Indicator"
+        indicator.Size = UDim2.new(0, 20, 0, 20)
+        indicator.Position = UDim2.new(1, -25, 0.5, -10)
+        indicator.BackgroundColor3 = currentValue and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(40, 40, 40)
+        indicator.ZIndex = 15
+        Instance.new("UICorner", indicator).CornerRadius = UDim.new(1, 0)
+
+        toggleBtn.MouseButton1Click:Connect(function()
+            currentValue = not currentValue
+            TweenService:Create(indicator, TweenInfo.new(0.2), {
+                BackgroundColor3 = currentValue and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(40, 40, 40)
+            }):Play()
+            callback(currentValue)
+        end)
+
+        table.insert(tabContent, toggleBtn)
+    end
+
+    return tabObj
 end
 
-if #Tabs > 0 then
-    selectTab(Tabs[1])
-end
+-- Global Function verfügbar machen
+CreateTab = Library.CreateTab
 
 -- Insert Open/Close
 UserInputService.InputBegan:Connect(function(input, gpe)
@@ -235,4 +232,4 @@ UserInputService.InputBegan:Connect(function(input, gpe)
     end
 end)
 
-print(Name .. " loaded! Tabs: " .. table.concat(Tabs, ", "))
+print("Untitled GUI Library loaded! Use CreateTab() to add features.")
